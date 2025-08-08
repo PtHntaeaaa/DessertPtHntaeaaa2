@@ -1,39 +1,33 @@
 #!/bin/bash
 
-# 全局变量定义
-SCRIPT_NAME="Dessert2"
+SCRIPT_NAME="DessertPtHntaeaaa-v1.2-"
 SCRIPT_VERSION="1.2"
 AUTHOR="PtHntaeaaa"
 GITHUB_URL="https://github.com/PtHntaeaaa/dessert"
 DEPENDENCIES=(wget unzip git)
 RECOMMENDED_PKGS=(nmap vim nano htop zsh eza emacs tree curl iproute2 fzf neofetch)
 
-# 检测Termux环境
 TERMUX_MODE=false
 if [[ $(uname -o) == "Android" ]]; then
     TERMUX_MODE=true
     RECOMMENDED_PKGS=(nmap vim nano htop zsh eza emacs tree curl fzf neofetch)
 fi
 
-# 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # 恢复默认颜色
+NC='\033[0m' 
 
-# 错误处理函数
 error_exit() {
     echo -e "${RED}[错误] $1${NC}" >&2
     exit 1
 }
 
-# 检查命令是否存在
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# 安装依赖
 install_dependencies() {
     local missing=()
     for dep in "${DEPENDENCIES[@]}"; do
@@ -54,7 +48,6 @@ install_dependencies() {
     fi
 }
 
-# 显示标题
 show_header() {
     clear
     echo -e "${GREEN}"
@@ -72,19 +65,16 @@ show_header() {
     echo "================================================================"
 }
 
-# 安装推荐软件包
 install_recommended() {
     show_header
     echo -e "${GREEN}正在安装九瓷推荐的常用软件包...${NC}"
     
-    # 在Termux中添加Python
     if $TERMUX_MODE; then
         RECOMMENDED_PKGS+=(python)
     else
         RECOMMENDED_PKGS+=(python3)
     fi
     
-    # 检查已安装的包
     local to_install=()
     for pkg in "${RECOMMENDED_PKGS[@]}"; do
         if ! command_exists "$pkg" && {
@@ -116,7 +106,6 @@ install_recommended() {
         echo -e "${GREEN}安装完成！${NC}"
     fi
     
-    # 显示系统信息
     if command_exists neofetch; then
         neofetch
     else
@@ -126,7 +115,6 @@ install_recommended() {
     read -p "按Enter键返回主菜单..."
 }
 
-# 下载甜点
 download_dessert() {
     while true; do
         show_header
@@ -143,16 +131,14 @@ download_dessert() {
         fi
     done
     
-    # 创建下载目录
     local download_dir="甜点_v$version"
     mkdir -p "$download_dir" || error_exit "无法创建目录"
     cd "$download_dir" || error_exit "无法进入目录"
     
-    # 下载文件
-    local filename="milk-$version.zip"
+    local filename="milk-$version-.py"
     echo -e "${YELLOW}正在下载甜点版本 $version...${NC}"
     
-    if wget --show-progress -q "$GITHUB_URL/raw/main/0/$filename"; then
+    if wget --show-progress -q "$GITHUB_URL/blob/main/0/$filename"; then
         echo -e "${GREEN}下载成功！${NC}"
     else
         cd ..
@@ -160,17 +146,11 @@ download_dessert() {
         error_exit "下载失败，请检查版本号或网络连接"
     fi
     
-    # 解压文件
-    echo "解压文件..."
-    unzip -q "$filename" || error_exit "解压失败"
-    rm "$filename"
-    
     echo -e "${GREEN}甜点已保存到: $(pwd)${NC}"
     cd ..
     read -p "按Enter键返回主菜单..."
 }
 
-# 主菜单
 main_menu() {
     while true; do
         show_header
@@ -206,40 +186,46 @@ main_menu() {
     done
 }
 
-# 检查更新
 check_updates() {
     show_header
     echo -e "${GREEN}检查更新...${NC}"
     echo "--------------------------------"
     
+    VERSION_URL="https://raw.githubusercontent.com/PtHntaeaaa/DessertPtHntaeaaa2/main/Dsh/version.txt"
+    
+    SCRIPT_URL="https://raw.githubusercontent.com/PtHntaeaaa/DessertPtHntaeaaa2/main/Dsh/sh/DessertPtHntaeaaa-v1.2-.sh"
+    
     local latest_version
-    latest_version=$(curl -sSL "$GITHUB_URL/raw/main/version.txt")
+    latest_version=$(curl -sSL "$VERSION_URL" | head -n1 | tr -d '[:space:]')
     
     if [ -z "$latest_version" ]; then
         echo -e "${YELLOW}无法获取最新版本信息${NC}"
-    elif [ "$(printf "%s\n%s" "$SCRIPT_VERSION" "$latest_version" | sort -V | tail -n1)" != "$SCRIPT_VERSION" ]; then
-        echo -e "${YELLOW}发现新版本: v$latest_version${NC}"
-        echo -e "当前版本: v$SCRIPT_VERSION"
-        read -p "是否更新脚本? [y/N] " yn
-        if [[ "$yn" =~ [Yy] ]]; then
-            echo "正在更新..."
-            if wget -q -O "$0.tmp" "$GITHUB_URL/raw/main/dessert2.sh"; then
-                mv "$0.tmp" "$0"
-                chmod +x "$0"
-                echo -e "${GREEN}更新成功！请重新运行脚本${NC}"
-                exit 0
-            else
-                echo -e "${RED}更新失败${NC}"
-                rm -f "$0.tmp"
-            fi
-        fi
     else
-        echo -e "${GREEN}当前已是最新版本 (v$SCRIPT_VERSION)${NC}"
+        local current_version="v$SCRIPT_VERSION"
+        
+        if [ "$current_version" != "$latest_version" ] && 
+           [ "$(printf "%s\n%s" "$current_version" "$latest_version" | sort -V | tail -n1)" == "$latest_version" ]; then
+            echo -e "${YELLOW}发现新版本: $latest_version${NC}"
+            echo -e "当前版本: $current_version"
+            read -p "是否更新脚本? [y/N] " yn
+            if [[ "$yn" =~ [Yy] ]]; then
+                echo "正在更新..."
+                if wget -q -O "$0.tmp" "$SCRIPT_URL"; then
+                    mv "$0.tmp" "$0"
+                    chmod +x "$0"
+                    echo -e "${GREEN}更新成功！请重新运行脚本${NC}"
+                    exit 0
+                else
+                    echo -e "${RED}更新失败${NC}"
+                    rm -f "$0.tmp"
+                fi
+            fi
+        else
+            echo -e "${GREEN}当前已是最新版本 ($current_version)${NC}"
+        fi
     fi
     
     read -p "按Enter键返回主菜单..."
 }
-
-# 主执行流程
 install_dependencies
 main_menu
